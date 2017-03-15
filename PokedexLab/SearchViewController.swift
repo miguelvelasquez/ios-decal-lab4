@@ -8,7 +8,7 @@
 
 import UIKit
 
-class SearchViewController: UIViewController {
+class SearchViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
 
     var pokemonArray: [Pokemon] = []
     var filteredArray: [Pokemon] = []
@@ -16,7 +16,8 @@ class SearchViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         pokemonArray = PokemonGenerator.getPokemonArray()
-
+        collect.delegate = self
+        collect.dataSource = self
     }
 
     override func didReceiveMemoryWarning() {
@@ -34,6 +35,32 @@ class SearchViewController: UIViewController {
         }
         return filtered
     }
-
-
+    
+    
+    @IBOutlet weak var collect: UICollectionView!
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return PokemonGenerator.categoryDict.count
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "searchCell", for: indexPath) as! collectionCell
+        cell.picture.image = UIImage(named: PokemonGenerator.categoryDict[indexPath.item]!)
+        return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        filteredArray = filteredPokemon(ofType: indexPath.item)
+        performSegue(withIdentifier: "searchToCategory", sender: self)
+    }
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if let identifier = segue.identifier {
+            if identifier == "searchToCategory" {
+                if let dest = segue.destination as? CategoryViewController {
+                    dest.pokemonArray = filteredArray
+                }
+            }
+        }
+    }
+    
 }
